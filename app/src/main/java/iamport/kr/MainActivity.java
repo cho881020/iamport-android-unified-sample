@@ -39,8 +39,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null && intent.getData() != null) {
             onReceiveIntent(intent);
-        } else {
-            mWebView.loadUrl("http://www.iamport.kr/demo");
         }
     }
 
@@ -56,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
             cookieManager.setAcceptCookie(true);
             cookieManager.setAcceptThirdPartyCookies(mWebView, true);
         }
+
+        mWebView.loadUrl("http://www.iamport.kr/demo");
     }
 
     private boolean isRedirectableUrl(String url) {
