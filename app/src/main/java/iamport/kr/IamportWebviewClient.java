@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
+import android.provider.Browser;
 import android.text.TextUtils;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -39,6 +40,14 @@ public class IamportWebviewClient extends WebViewClient {
                     intent.setComponent(new ComponentName("com.kftc.bankpay.android","com.kftc.bankpay.android.activity.MainActivity"));
                     intent.putExtra("requestInfo", params);
                     mActivity.startActivityForResult(intent, mActivity.REQUEST_CODE);
+
+                    return true;
+                } else if ( url.startsWith(Scheme.LGU_BANKPAY)) {
+                    intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                    intent.putExtra(Browser.EXTRA_APPLICATION_ID, mActivity.getPackageName());
+                    mActivity.startActivity(intent);
+
                     return true;
                 }
 
@@ -75,6 +84,8 @@ public class IamportWebviewClient extends WebViewClient {
                     id = Scheme.PACKAGE_ISP;
                 } else if (scheme.equalsIgnoreCase(Scheme.BANKPAY)) {
                     id = Scheme.PACKAGE_BANKPAY;
+                } else if ( scheme.equalsIgnoreCase(Scheme.LGU_BANKPAY)) {
+                    id = Scheme.PACKAGE_LGU_BANKPAY;
                 }
             }
 
