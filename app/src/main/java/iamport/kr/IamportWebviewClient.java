@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
 import android.text.TextUtils;
+import android.webkit.ValueCallback;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -14,6 +15,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by constant on 2017-06-23.
@@ -65,6 +67,18 @@ public class IamportWebviewClient extends WebViewClient {
         return false;
     }
 
+    @Override
+    public void onPageFinished(WebView view, String url) {
+        super.onPageFinished(view, url);
+
+        view.evaluateJavascript("javascript:alert()", new ValueCallback<String>() {
+            @Override
+            public void onReceiveValue(String s) {
+                System.out.print("sss");
+            }
+        });
+    }
+
     private boolean isOverridableUrl(String url) {
         String[] schemas = new String[]{"http://", "https://", "javascript://"};
         for (String schema : schemas) {
@@ -104,36 +118,30 @@ public class IamportWebviewClient extends WebViewClient {
 
     private String getRequestParamsOfBankPay(String rawUrl) throws URISyntaxException {
 
+        mActivity.setBankTid("");
         Uri uri = Uri.parse(rawUrl);
-        Map<String, String> query = getQuery(uri.getQuery());
-        List<String> allowedKeys = Arrays.asList("user_key", "firm_name", "amount", "serial_no", "approve_no", "receipt_yn", "user_key", "callbackparam2", "");
-        StringBuilder params = new StringBuilder();
+        Set<String> queryNames = uri.getQueryParameterNames();
 
-        for (String key : query.keySet()) {
-            String value = query.get(key);
-            if (allowedKeys.contains(key)) {
-                if (key.equals("user_key")) {
-                    mActivity.setBankTid(value);
-                    params.append(String.format("&%s=%s",key, value));
+        StringBuilder ret_data = new StringBuilder();
+        List<String> keys = Arrays.asList(new String[]{"firm_name", "amount", "serial_no", "approve_no", "receipt_yn", "user_key", "callbackparam2", ""});
+
+        String v;
+        for ( String k : queryNames) {
+
+            if (keys.contains(k)) {
+                v = uri.getQueryParameter(k);
+
+                if ("user_key".equals(k)) {
+                    mActivity.setBankTid(v);
                 }
+                ret_data.append("&").append(k).append("=").append(v);
             }
         }
 
-        params.append(String.format("&%s=%s","callbackparam1", "nothing"));
-        params.append(String.format("&%s=%s","callbackparam3", "nothing"));
+        ret_data.append("&callbackparam1=" + "nothing");
+        ret_data.append("&callbackparam3=" + "nothing");
 
-        return params.toString();
+        return ret_data.toString();
     }
 
-    private Map<String, String> getQuery(String rawQuery) {
-        Map<String, String> query = new HashMap<String, String>();
-        String[] pairs = rawQuery.split("&");
-        for (String pair : pairs) {
-            String[] partials = pair.split("=");
-            if (partials.length > 2) {
-                query.put(partials[0], partials[1]);
-            }
-        }
-        return query;
-    }
 }
